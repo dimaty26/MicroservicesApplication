@@ -3,6 +3,8 @@ let modalTitle = $('.modal-title');
 let modalBody = $('.modal-body');
 let modalFooter = $('.modal-footer');
 
+var token = "";
+
 let primaryButton = $('<button type="button" class="btn btn-primary"></button>');
 let dismissButton = $('<button type="button" class="btn btn-secondary" data-dismiss="modal"></button>');
 let dangerButton = $('<button type="button" class="btn btn-danger"></button>');
@@ -13,25 +15,6 @@ $(document).ready(function () {
     defaultModal();
     validation();
 });
-
-// Example starter JavaScript for disabling form submissions if there are invalid fields
-(function() {
-    'use strict';
-    window.addEventListener('load', function() {
-        // Fetch all the forms we want to apply custom Bootstrap validation styles to
-        var forms = document.getElementsByClassName('needs-validation');
-        // Loop over them and prevent submission
-        var validation = Array.prototype.filter.call(forms, function(form) {
-            form.addEventListener('saveUserButton', function(event) {
-                if (form.checkValidity() === false) {
-                    event.preventDefault();
-                    event.stopPropagation();
-                }
-                form.classList.add('was-validated');
-            }, false);
-        });
-    }, false);
-})();
 
 //Modal Form Validation
 function validation() {
@@ -280,13 +263,10 @@ async function editUser(modal, id) {
         roleJson.then(roles => {
             roles.forEach(role => {
                 if (rolesArr.includes(role.id) && role.id === 1) {
-                    console.log(user.firstName, user.email, roles, "first if");
                     modal.find('#role1').prop('checked', true);
                 } else if (rolesArr.includes(role.id) && role.id === 2) {
-                    console.log(user.firstName, user.email, roles, "second if");
                     modal.find('#role2').prop('checked', true);
                 } else if (rolesArr.includes(role.id)) {
-                    console.log(user.firstName, user.email, roles, "second if");
                     modal.find('#role2').prop('checked', true);
                 }
             });
@@ -436,16 +416,14 @@ async function deleteUser(modal, id) {
     });
 }
 
-const buttonSaveListener = document.getElementById('Save');
-
-
-
 const http = {
     fetch: async function (url, options = {}) {
         const response = await fetch(url, {
             headers: {
                 'Accept': 'application/json',
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'Origin': 'http://localhost:9091/',
+                'Authorization': 'Bearer ' + token
             },
             ...options,
         });
@@ -455,32 +433,38 @@ const http = {
 
 const userService = {
     findById: async () => {
-        return await http.fetch('/api/users');
+        return await http.fetch('http://localhost:8080/api/users');
     }
 };
 
 const adminService = {
     getUsers: async () => {
-        return await http.fetch('/api/admin');
+        return await http.fetch('http://localhost:8080/api/admin');
     },
     addUser: async (data) => {
         console.log(JSON.stringify(data));
-        return await http.fetch('/api/admin', {
+        return await http.fetch('http://localhost:8080/api/admin', {
             method: 'POST',
             body: JSON.stringify(data)
         });
     },
+    findByUsername: async(data) => {
+        return await http.fetch('http://localhost:8080/api/admin/name/', {
+            method: 'GET',
+            body: JSON.stringify(data)
+        });
+    },
     findById: async (id) => {
-        return await http.fetch('/api/admin/' + id);
+        return await http.fetch('http://localhost:8080/api/admin/' + id);
     },
     updateUser: async (data) => {
-        return await http.fetch('/api/admin/update', {
+        return await http.fetch('http://localhost:8080/api/admin/update', {
             method: 'POST',
             body: JSON.stringify(data)
         });
     },
     delete: async (id) => {
-        return await http.fetch('/api/admin/' + id, {
+        return await http.fetch('http://localhost:8080/api/admin/' + id, {
             method: 'DELETE'
         });
     },
@@ -488,7 +472,70 @@ const adminService = {
 
 const roleService = {
     findAll: async () => {
-        return await http.fetch('/api/roles');
+        return await http.fetch('http://localhost:8080/api/roles');
     }
+}
+
+const buttonLogin = document.getElementById('loginForm');
+
+buttonLogin.addEventListener('submit', async function(event) {
+    event.preventDefault();
+    console.log("inside login form");
+    var username = $('#username').val().trim();
+    var password = $('#password').val().trim();
+
+    let data;
+
+    if (username !== "" && password !== "") {
+        data = {
+            username: username,
+            password: password
+        };
+    }
+
+    let usernameData = {
+        username: username
+    };
+
+    let response = await fetch('http://localhost:8080/authenticate', {
+        method: 'POST',
+        cache: 'no-cache',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+    });
+
+    if (response.ok) {
+        response.json().then(res => {
+            console.log(res.jwt);
+            token = res.jwt;
+        });
+
+        await handleByUsername(usernameData);
+    }
+});
+
+async function handleByUsername(data) {
+    const userResponse = await adminService.findByUsername(data);
+    const userJson = userResponse.json();
+    const roleResponse = await roleService.findAll();
+    const roleJson = roleResponse.json();
+
+    userJson.then(user => {
+        let rolesArr = []
+        user.roles.forEach(role => rolesArr.push(role.id))
+        console.log(user.firstName, user.email, rolesArr);
+
+        roleJson.then(roles => {
+            roles.forEach(role => {
+                if (rolesArr.includes(role.id) && role.id === 1) {
+                    window.location.replace("http://localhost:8080/users/admin");
+                } else {
+                    window.location.replace("http://localhost:8080/users/user");
+                }
+            });
+        });
+    });
 }
 

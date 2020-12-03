@@ -1,15 +1,13 @@
 package com.zmeevsky.administration.restservice.controller;
 
-import com.zmeevsky.administration.restservice.dto.SaveUserRequest;
-import com.zmeevsky.administration.restservice.dto.SaveUserResponse;
-import com.zmeevsky.administration.restservice.dto.UpdateUserRequest;
-import com.zmeevsky.administration.restservice.dto.UpdateUserResponse;
+import com.zmeevsky.administration.restservice.dto.*;
 import com.zmeevsky.administration.restservice.entity.Role;
 import com.zmeevsky.administration.restservice.entity.User;
 import com.zmeevsky.administration.restservice.service.RoleService;
 import com.zmeevsky.administration.restservice.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,6 +18,7 @@ import java.util.List;
 import java.util.Set;
 
 @RestController
+@CrossOrigin(origins ="http://localhost:9091/")
 @RequestMapping("/api/admin")
 public class AdminRestController {
 
@@ -40,6 +39,11 @@ public class AdminRestController {
     @GetMapping("/{userId}")
     public ResponseEntity<User> getUser(@PathVariable int userId) {
         return ResponseEntity.ok(userService.getUser(userId));
+    }
+
+    @GetMapping(value = "/name")
+    public ResponseEntity<User> findByUsername(@RequestBody FindByUsernameRequest request) {
+        return ResponseEntity.ok(userService.findByUsername(request.getUsername()));
     }
 
     @PostMapping()

@@ -11,6 +11,6 @@ import java.util.List;
 @Repository
 public interface RoleRepository extends JpaRepository<Role, Integer> {
 
-    @Query("select r from Role r where r.id in :ids")
+    @Query("select r from Role r where r.id in :ids order by r.id")
     List<Role> findByRoleIdIn(@Param("ids") List<Integer> ids);
 }
