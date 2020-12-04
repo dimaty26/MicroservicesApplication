@@ -12,6 +12,8 @@ public class DataConfig implements WebMvcConfigurer {
     public void addViewControllers(ViewControllerRegistry registry) {
         registry.addViewController("/show-login-page").setViewName("plain-login");
         registry.addViewController("/").setViewName("start-page");
+        registry.addViewController("/show-admin-page").setViewName("admin-page");
+        registry.addViewController("/show-user-page").setViewName("user-page");
     }
 
     @Override

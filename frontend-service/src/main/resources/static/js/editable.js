@@ -448,11 +448,8 @@ const adminService = {
             body: JSON.stringify(data)
         });
     },
-    findByUsername: async(data) => {
-        return await http.fetch('http://localhost:8080/api/admin/name/', {
-            method: 'GET',
-            body: JSON.stringify(data)
-        });
+    findByUsername: async(username) => {
+        return await http.fetch('http://localhost:8080/api/admin/name/' + btoa(username));
     },
     findById: async (id) => {
         return await http.fetch('http://localhost:8080/api/admin/' + id);
@@ -493,10 +490,6 @@ buttonLogin.addEventListener('submit', async function(event) {
         };
     }
 
-    let usernameData = {
-        username: username
-    };
-
     let response = await fetch('http://localhost:8080/authenticate', {
         method: 'POST',
         cache: 'no-cache',
@@ -512,12 +505,12 @@ buttonLogin.addEventListener('submit', async function(event) {
             token = res.jwt;
         });
 
-        await handleByUsername(usernameData);
+        await handleByUsername(username);
     }
 });
 
-async function handleByUsername(data) {
-    const userResponse = await adminService.findByUsername(data);
+async function handleByUsername(username) {
+    const userResponse = await adminService.findByUsername(username);
     const userJson = userResponse.json();
     const roleResponse = await roleService.findAll();
     const roleJson = roleResponse.json();
@@ -530,9 +523,9 @@ async function handleByUsername(data) {
         roleJson.then(roles => {
             roles.forEach(role => {
                 if (rolesArr.includes(role.id) && role.id === 1) {
-                    window.location.replace("http://localhost:8080/users/admin");
+                    window.location.replace("http://localhost:9091/show-admin-page");
                 } else {
-                    window.location.replace("http://localhost:8080/users/user");
+                    window.location.replace("http://localhost:9091/show-user-page");
                 }
             });
         });

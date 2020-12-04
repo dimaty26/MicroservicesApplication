@@ -12,10 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @RestController
 @CrossOrigin(origins ="http://localhost:9091/")
@@ -41,9 +38,10 @@ public class AdminRestController {
         return ResponseEntity.ok(userService.getUser(userId));
     }
 
-    @GetMapping(value = "/name")
-    public ResponseEntity<User> findByUsername(@RequestBody FindByUsernameRequest request) {
-        return ResponseEntity.ok(userService.findByUsername(request.getUsername()));
+    @GetMapping(value = "/name/{username}")
+    public ResponseEntity<User> findByUsername(@PathVariable String username) {
+        String userName = new String(Base64.getDecoder().decode(username));
+        return ResponseEntity.ok(userService.findByUsername(userName));
     }
 
     @PostMapping()
